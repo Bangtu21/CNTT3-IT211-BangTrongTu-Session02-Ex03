@@ -1,0 +1,14 @@
+IT211-Session02-Ex03
+Phần 1:
+	- Mô tả vai trò của HTTP Status Codes trong việc xây dựng API vững chắc (robust API):
+		+ HTTP Status Code giúp:
+			1. Giúp cho client biết request thành công hay thất bại
+			2. Phân chia từng loại lỗi
+			3. Xử lý logic phía frontend/mobile chính xác hơn
+			4. API chuẩn RESTful và dễ tích hợp
+	- Việc trả về null thay vì ResponseEntity với HttpStatus.NOT_FOUND lại ảnh hưởng đến khả năng xử lý lỗi của client vì:
+		+ Nếu return null; thì trên client sẽ nhận kết quả 200 OK nhưng trong JSON thì nó là null khiến cho frontend không biết server lỗi hay query sai
+		+ nếu return HttpStatus.NOT_FOUND thì trên client chỉ cần báo lỗi "không tìm thấy sản phẩm"
+		
+	- Jackson Dataformat XML là cần thiết cho Content Negotiation với XML tại vì jackson-dataformat-xml là thư viện giúp Spring Boot biết cách chuyển 
+Java Object thành XML để hỗ trợ Content Negotiation khi client gửi Accept: application/xml.
