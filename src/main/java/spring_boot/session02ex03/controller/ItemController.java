@@ -1,83 +1,106 @@
 package spring_boot.session02ex03.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import spring_boot.session02ex03.model.entity.Item;
+import spring_boot.session02ex03.service.ItemService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/api/v1/items")
 public class ItemController {
-    private List<Item> items = new ArrayList<>();
+    private final ItemService itemService;
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
+    }
 
-    // GET ITEM BY ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Item> getItemById(@PathVariable Long id) {
-        for (Item item : items) {
-            if (item.getId().equals(id)) {
-                return new ResponseEntity<>(
-                        item,
-                        HttpStatus.OK
-                );
+    @GetMapping(
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE
             }
-        }
-
+    )
+    public ResponseEntity<List<Item>> getAllItems() {
         return new ResponseEntity<>(
-                HttpStatus.NOT_FOUND
+                itemService.getAllItems(),
+                HttpStatus.OK
         );
     }
 
-    // Tạo
-    @PostMapping
+    @GetMapping(
+            value = "/{id}",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE
+            }
+    )
+    public ResponseEntity<Item> getItemById(@PathVariable Long id) {
+        return itemService.getItemById(id)
+                .map(item ->
+                        new ResponseEntity<>(item, HttpStatus.OK))
+                .orElse(
+                        new ResponseEntity<>(HttpStatus.NOT_FOUND)
+                );
+    }
+
+    @PostMapping(
+            consumes = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE
+            },
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE
+            }
+    )
     public ResponseEntity<Item> createItem(@RequestBody Item item) {
-        item.setId((long) (items.size() + 1));
-        items.add(item);
         return new ResponseEntity<>(
-                item,
+                itemService.createItem(item),
                 HttpStatus.CREATED
         );
     }
 
-    // Cập nhật
-    @PutMapping("/{id}")
+    @PutMapping(
+            value = "/{id}",
+            consumes = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE
+            },
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE
+            }
+    )
     public ResponseEntity<Item> updateItem(
             @PathVariable Long id,
             @RequestBody Item newItem
     ) {
-        for (Item item : items) {
-            if (item.getId().equals(id)) {
-                item.setName(newItem.getName());
-                item.setQuantity(newItem.getQuantity());
-                item.setPrice(newItem.getPrice());
-                return new ResponseEntity<>(
-                        item,
-                        HttpStatus.OK
+        return itemService.updateItem(id, newItem)
+                .map(item ->
+                        new ResponseEntity<>(
+                                item,
+                                HttpStatus.OK
+                        ))
+                .orElse(
+                        new ResponseEntity<>(
+                                HttpStatus.NOT_FOUND
+                        )
                 );
-            }
-        }
-        return new ResponseEntity<>(
-                HttpStatus.NOT_FOUND
-        );
     }
 
-    // Xóa
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        for (Item item : items) {
-            if (item.getId().equals(id)) {
-                items.remove(item);
-                return new ResponseEntity<>(
-                        HttpStatus.NO_CONTENT
-                );
-            }
+        boolean deleted = itemService.deleteItem(id);
+        if (!deleted) {
+            return new ResponseEntity<>(
+                    HttpStatus.NOT_FOUND
+            );
         }
         return new ResponseEntity<>(
-                HttpStatus.NOT_FOUND
+                HttpStatus.NO_CONTENT
         );
     }
 }

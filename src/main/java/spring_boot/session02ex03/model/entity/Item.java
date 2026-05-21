@@ -1,6 +1,14 @@
 package spring_boot.session02ex03.model.entity;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "items")
+@JacksonXmlRootElement(localName = "item")
 public class Item {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private int quantity;
